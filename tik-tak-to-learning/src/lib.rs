@@ -241,6 +241,7 @@ impl Game {
 
         Option::None
     }
+
     pub fn new() -> Game {
         let states = HashMap::new();
         let mut game = Game { states };
@@ -266,7 +267,24 @@ impl Game {
                 continue;
             }
 
-            game.states.insert(state, vec![]);
+            // create a set of actions we can take from this state,
+            // filtering out all illegal moves
+            let options = state
+                .fields
+                .iter()
+                .enumerate()
+                .filter_map(|(i, e)| {
+                    // The FieldId represents a possible next state to fill.
+                    // only empty fields can be filled in tik tak to
+                    if *e == Entry::Empty {
+                        Some(i as FieldId)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            game.states.insert(state, options);
         }
 
         game
