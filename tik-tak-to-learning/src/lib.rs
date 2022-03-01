@@ -259,7 +259,7 @@ impl State {
                 continue;
             }
 
-            let mut state = self.clone();
+            let mut state = *self;
             state.fields[i] = player;
 
             if state.get_winner().is_some() {
