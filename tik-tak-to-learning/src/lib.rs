@@ -136,7 +136,7 @@ mod tests {
     }
 }
 
-use std::{collections::HashMap, fmt::Display, io::Empty};
+use std::{collections::HashMap, fmt::Display};
 
 // \in 0..9
 type FieldId = u8;
