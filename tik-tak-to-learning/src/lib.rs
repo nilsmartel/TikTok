@@ -132,6 +132,27 @@ pub struct State {
 }
 
 impl State {
+    /// Returns the id of the field the player would need to occupy in order to win.
+    /// If no such move exists, returns None
+    fn get_winning_move(&self, player: Entry) -> Option<FieldId> {
+        assert_ne!(player, Entry::Empty);
+
+        for i in 0..9 {
+            if self.fields[i] != Entry::Empty {
+                continue
+            }
+
+            let mut state = self.clone();
+            state.fields[i] = player;
+
+            if state.get_winner().is_some() {
+                return Some(i as u8);
+            }
+        }
+
+        None
+    }
+
     fn get_winner(&self) -> Option<Entry> {
         for row in 0..3 {
             let row = row * 3;
