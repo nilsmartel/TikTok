@@ -4,7 +4,12 @@ mod tests {
     fn rotate_right() {
         use super::rotate_id_right as right;
         for i in 0..9 {
-            assert_eq!(i, right(right(right(i))));
+            assert_eq!(
+                i,
+                right(right(right(right(i)))),
+                "testing rotation right of field #{}",
+                i
+            );
         }
     }
 
@@ -12,7 +17,12 @@ mod tests {
     fn rotate_left() {
         use super::rotate_id_left as left;
         for i in 0..9 {
-            assert_eq!(i, left(left(left(i))));
+            assert_eq!(
+                i,
+                left(left(left(left(i)))),
+                "testing rotation left of field #{}",
+                i
+            );
         }
     }
 
@@ -20,7 +30,7 @@ mod tests {
     fn rotate_180() {
         use super::rotate_id_180 as rot;
         for i in 0..9 {
-            assert_eq!(i, rot(rot(i)));
+            assert_eq!(i, rot(rot(i)), "testing 180° rotation of field {}", i);
         }
     }
 
@@ -34,16 +44,95 @@ mod tests {
         ];
 
         for code in codes {
-            assert_eq!(code, State::from_code(code).to_code());
+            let state = State::from_code(code);
+            assert_eq!(
+                code,
+                state.to_code(),
+                "testing state <=> code serialisation of {state:#?}"
+            );
         }
+    }
+
+    #[test]
+    fn win_move_none() {
+        use super::Entry::{Circle, Cross, Empty};
+        use super::State;
+        // rust-fmt disable
+        let state = State {
+            fields: [
+                // 0 1 2
+                Empty, Empty, Empty, // 3 4 5
+                Empty, Empty, Empty, // 6 7 8
+                Empty, Empty, Empty,
+            ],
+        };
+
+        assert_eq!(state.get_winning_move(Circle), None);
+        assert_eq!(state.get_winning_move(Cross), None);
+    }
+
+    #[test]
+    fn win_move1() {
+        use super::Entry::{Circle, Cross, Empty};
+        use super::State;
+        // rust-fmt disable
+        let state = State {
+            fields: [
+                // 0 1 2
+                Cross, Cross, Empty, // 3 4 5
+                Empty, Circle, Empty, // 6 7 8
+                Empty, Circle, Empty,
+            ],
+        };
+
+        assert_eq!(state.get_winning_move(Circle), None);
+        assert_eq!(state.get_winning_move(Cross), Some(2));
+    }
+
+    #[test]
+    fn win_move2() {
+        use super::Entry::{Circle, Cross, Empty};
+        use super::State;
+        // rust-fmt disable
+        let state = State {
+            fields: [
+                // 0 1 2
+                Empty, Cross, Empty, // 3 4 5
+                Empty, Empty, Empty, // 6 7 8
+                Cross, Empty, Cross,
+            ],
+        };
+
+        assert_eq!(state.get_winning_move(Circle), None);
+        assert_eq!(state.get_winning_move(Cross), Some(7));
+    }
+
+    #[test]
+    fn win_move1a() {
+        use super::Entry::{Circle, Cross, Empty};
+        use super::State;
+        // rust-fmt disable
+        let state = State {
+            fields: [
+                // 0 1 2
+                Cross, Cross, Empty, // 3 4 5
+                Empty, Empty, Empty, // 6 7 8
+                Empty, Circle, Empty,
+            ],
+        };
+
+        assert_eq!(state.get_winning_move(Circle), None);
+        assert_eq!(state.get_winning_move(Cross), Some(2));
     }
 
     #[test]
     fn state_setup() {
         use super::Game;
 
-        let game = Game::new();
-        assert_eq!(game.states.len(), 304);
+        let game = Game::initial_setup(super::Entry::Cross);
+        // this isn't exactly useful
+        assert!(game.states.len() > 600);
+        // assert_eq!(game.states.len(), 304);
     }
 }
 
@@ -137,9 +226,14 @@ impl State {
     fn get_winning_move(&self, player: Entry) -> Option<FieldId> {
         assert_ne!(player, Entry::Empty);
 
+        // first check if game is already over
+        if self.get_winner().is_some() {
+            return None;
+        }
+
         for i in 0..9 {
             if self.fields[i] != Entry::Empty {
-                continue
+                continue;
             }
 
             let mut state = self.clone();
@@ -154,27 +248,35 @@ impl State {
     }
 
     fn get_winner(&self) -> Option<Entry> {
+        // first check each row, from top to bottom
         for row in 0..3 {
             let row = row * 3;
-            if self.fields[row] == Entry::Empty {
+            let current = self.fields[row];
+            // we dont need to check further, if this fields is empty anyway
+            if current == Entry::Empty {
                 continue;
             }
 
-            if self.fields[row] == self.fields[row + 1] && self.fields[row] == self.fields[row + 2]
-            {
-                return Some(self.fields[row]);
+            // check if the 2 right neighbours are of the same kind
+            if current == self.fields[row + 1] && self.fields[row] == self.fields[row + 2] {
+                return Some(current);
             }
         }
 
         for col in 0..3 {
-            if self.fields[col] == Entry::Empty {
+            let current = self.fields[col];
+            if current == Entry::Empty {
                 continue;
             }
 
-            if self.fields[col] == self.fields[col + 3] && self.fields[col] == self.fields[col + 6]
-            {
-                return Some(self.fields[col]);
+            if current == self.fields[col + 3] && current == self.fields[col + 6] {
+                return Some(current);
             }
+        }
+
+        // if the middle field is empty, we don't need to check further
+        if self.fields[4] == Entry::Empty {
+            return None;
         }
 
         if self.fields[0] == self.fields[4] && self.fields[0] == self.fields[8] {
@@ -263,7 +365,10 @@ impl Game {
         Option::None
     }
 
-    pub fn new() -> Game {
+    /// Creates the initial game setup, used to further train the tik tak toe player
+    pub fn initial_setup(cpu_player: Entry) -> Game {
+        assert_ne!(cpu_player, Entry::Empty);
+
         let states = HashMap::new();
         let mut game = Game { states };
 
@@ -290,20 +395,25 @@ impl Game {
 
             // create a set of actions we can take from this state,
             // filtering out all illegal moves
-            let options = state
-                .fields
-                .iter()
-                .enumerate()
-                .filter_map(|(i, e)| {
-                    // The FieldId represents a possible next state to fill.
-                    // only empty fields can be filled in tik tak to
-                    if *e == Entry::Empty {
-                        Some(i as FieldId)
-                    } else {
-                        None
-                    }
-                })
-                .collect();
+            // or, if there is an obvious winning scenarion, pick that one
+            let options = if let Some(field_id) = state.get_winning_move(cpu_player) {
+                vec![field_id]
+            } else {
+                state
+                    .fields
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, e)| {
+                        // The FieldId represents a possible next state to fill.
+                        // only empty fields can be filled in tik tak to
+                        if *e == Entry::Empty {
+                            Some(i as FieldId)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            };
 
             game.states.insert(state, options);
         }
