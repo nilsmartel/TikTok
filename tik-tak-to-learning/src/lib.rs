@@ -48,7 +48,7 @@ mod tests {
             assert_eq!(
                 code,
                 state.to_code(),
-                "testing state <=> code serialisation of {state:#?}"
+                "testing state <=> code serialisation of {state}"
             );
         }
     }
@@ -136,7 +136,7 @@ mod tests {
     }
 }
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display, io::Empty};
 
 // \in 0..9
 type FieldId = u8;
@@ -218,6 +218,29 @@ pub enum Entry {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct State {
     fields: [Entry; 9],
+}
+
+impl Display for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fn to_char(e: Entry) -> char {
+            match e {
+                Entry::Empty => '.',
+                Entry::Cross => 'X',
+                Entry::Circle => 'O',
+            }
+        }
+        for row in 0..3 {
+            let row = row * 3;
+            write!(f, "|")?;
+            for col in 0..3 {
+                let id = row + col;
+                write!(f, "{}", to_char(self.fields[id]))?;
+            }
+            writeln!(f, "|")?;
+        }
+
+        Ok(())
+    }
 }
 
 impl State {
