@@ -179,9 +179,9 @@ mod tests {
 
     #[test]
     fn state_setup() {
-        use super::Game;
+        use super::Model;
 
-        let game = Game::initial_setup(super::Entry::Cross);
+        let game = Model::initial_setup(super::Entry::Cross);
         // this isn't exactly useful
         assert!(game.states.len() > 600);
         // assert_eq!(game.states.len(), 304);
@@ -419,11 +419,12 @@ impl State {
     }
 }
 
-pub struct Game {
+pub struct Model {
     pub states: HashMap<State, Vec<FieldId>>,
 }
 
-impl Game {
+impl Model {
+
     fn get_available_moves(&self, state: &State) -> Option<(&[FieldId], Rotation, bool)> {
         use Rotation::*;
 
@@ -441,11 +442,11 @@ impl Game {
     }
 
     /// Creates the initial game setup, used to further train the tik tak toe player
-    pub fn initial_setup(cpu_player: Entry) -> Game {
+    pub fn initial_setup(cpu_player: Entry) -> Model {
         assert_ne!(cpu_player, Entry::Empty);
 
         let states = HashMap::new();
-        let mut game = Game { states };
+        let mut game = Model { states };
 
         let amount_of_differnet_states = 3usize.pow(9);
 
