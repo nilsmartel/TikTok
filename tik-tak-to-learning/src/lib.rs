@@ -35,13 +35,65 @@ mod tests {
     }
 
     #[test]
-    fn state_encoding() {
+    fn state_encoding_1() {
+        use super::{Entry, State};
+
+        let code = 2;
+
+        let state = State {
+            fields: [
+                Entry::Circle,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+            ],
+        };
+
+        assert_eq!(code, state.to_code(),);
+
+        assert_eq!(State::from_code(code), state,);
+    }
+
+    #[test]
+    fn state_encoding_2() {
+        use super::{Entry, State};
+
+        let code = 1 + 3 + 2*3*3;
+
+        let state = State {
+            fields: [
+                Entry::Cross,
+                Entry::Cross,
+                Entry::Circle,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+                Entry::Empty,
+            ],
+        };
+
+        assert_eq!(code, state.to_code(),);
+
+        assert_eq!(State::from_code(code), state,);
+    }
+
+    #[test]
+    fn state_encoding_many() {
         use super::State;
 
+        let max = 19683-1;
         let codes = [
-            0usize, 213, 231312, 554, 2, 345, 23, 4, 325, 43, 65436, 453, 6, 5347, 163575, 765,
-            537, 658567463, 5234, 95785, 546676,
+            0usize, 213, max, 554, 2, 345, 23, 4, 325, 43, 6536, 453, 6, 5347, 13575, 765,
+            537, 6563, 5234, 9575, 4676,
         ];
+
 
         for code in codes {
             let state = State::from_code(code);
