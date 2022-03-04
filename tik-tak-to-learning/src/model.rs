@@ -12,7 +12,7 @@ mod tests {
     }
 }
 
-use std::{collections::HashMap, ops::Index};
+use std::collections::HashMap;
 
 use crate::game::{transform_id, Entry, FieldId, GameState};
 

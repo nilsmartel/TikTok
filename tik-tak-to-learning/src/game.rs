@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn win_move_none() {
-        use super::Entry::{Human, Computer, Empty};
+        use super::Entry::{Computer, Empty, Human};
         use super::GameState;
         // rust-fmt disable
         let state = GameState {
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn win_move1() {
-        use super::Entry::{Human, Computer, Empty};
+        use super::Entry::{Computer, Empty, Human};
         use super::GameState;
         // rust-fmt disable
         let state = GameState {
@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn win_move2() {
-        use super::Entry::{Human, Computer, Empty};
+        use super::Entry::{Computer, Empty, Human};
         use super::GameState;
         // rust-fmt disable
         let state = GameState {
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn win_move1a() {
-        use super::Entry::{Human, Computer, Empty};
+        use super::Entry::{Computer, Empty, Human};
         use super::GameState;
         // rust-fmt disable
         let state = GameState {
