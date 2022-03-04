@@ -366,7 +366,7 @@ impl GameState {
         Self { fields }
     }
 
-    pub fn transform_field(self, rotation: Rotation, flip: bool) -> Self {
+    pub(crate) fn transform_field(self, rotation: Rotation, flip: bool) -> Self {
         let f = |field| transform_id(field, rotation, flip);
         self.map_field_indices(f)
     }
